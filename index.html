@@ -1,0 +1,1554 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RestoKu - Sistem Manajemen Keuangan & Rekap Restoran Harian</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary-blue: #ff6b6b;
+        --secondary-blue: #ff8e72;
+        --light-blue: #fff0ed;
+        --white: #ffffff;
+        --light-gray: #f5f7fa;
+        --gray: #a0aec0;
+        --dark-gray: #4a5568;
+        --success-green: #48bb78;
+        --danger-red: #f56565;
+        --warning-yellow: #f6ad55;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #fff8f6 0%, #fff0ed 100%);
+        min-height: 100vh;
+        color: var(--dark-gray);
+      }
+
+      /* Navbar */
+      .navbar {
+        background: var(--white);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-blue);
+      }
+
+      .nav-brand i {
+        font-size: 1.5rem;
+      }
+
+      .nav-menu {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .nav-menu a {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        color: var(--gray);
+        text-decoration: none;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .nav-menu a:hover {
+        background: var(--light-blue);
+        color: var(--primary-blue);
+      }
+
+      .nav-menu a.active {
+        background: var(--primary-blue);
+        color: var(--white);
+      }
+
+      /* Container */
+      .container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: var(--dark-gray);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Dashboard header row (title + date picker) */
+      .dashboard-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .dashboard-header-row .page-title {
+        margin-bottom: 0;
+      }
+
+      .date-picker-wrapper {
+        background: var(--white);
+        padding: 0.75rem 1.25rem;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .date-picker-wrapper label {
+        font-weight: 500;
+        color: var(--dark-gray);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+      }
+
+      .date-picker-wrapper input[type="date"] {
+        border: 2px solid var(--light-gray);
+        border-radius: 8px;
+        padding: 0.4rem 0.6rem;
+        font-family: "Inter", sans-serif;
+        color: var(--dark-gray);
+      }
+
+      .date-picker-wrapper input[type="date"]:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+      }
+
+      /* Summary Cards */
+      .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .card {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+      }
+
+      .card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+
+      .saldo-card .card-icon {
+        background: var(--light-blue);
+        color: var(--primary-blue);
+      }
+
+      .pemasukan-card .card-icon {
+        background: #e6fffa;
+        color: var(--success-green);
+      }
+
+      .pengeluaran-card .card-icon {
+        background: #fff5f5;
+        color: var(--danger-red);
+      }
+
+      .card-content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card-label {
+        font-size: 0.875rem;
+        color: var(--gray);
+        margin-bottom: 0.25rem;
+      }
+
+      .card-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark-gray);
+      }
+
+      /* Charts */
+      .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .chart-card {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+      }
+
+      .chart-card h3 {
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        color: var(--gray);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Wrapper agar tinggi grafik Chart.js konsisten & responsif di semua ukuran layar */
+      .chart-canvas-wrapper {
+        position: relative;
+        width: 100%;
+        height: 260px;
+      }
+
+      /* Menu accumulation list */
+      .menu-accum-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+
+      .menu-accum-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        background: var(--light-blue);
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+      }
+
+      .menu-accum-item .menu-name {
+        font-weight: 600;
+        color: var(--dark-gray);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .menu-accum-item .menu-qty {
+        font-weight: 700;
+        color: var(--primary-blue);
+      }
+
+      /* Reason / analysis box */
+      .reason-card {
+        border-left: 5px solid var(--primary-blue);
+      }
+
+      .reason-text p {
+        line-height: 1.7;
+        color: var(--dark-gray);
+        font-size: 0.95rem;
+      }
+
+      /* Form */
+      .form-card {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--dark-gray);
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--light-gray);
+        border-radius: 10px;
+        font-family: "Inter", sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+      }
+
+      .form-group input[readonly] {
+        background-color: var(--light-gray);
+        color: var(--dark-gray);
+        font-weight: 600;
+        cursor: not-allowed;
+      }
+
+      /* Styling untuk validasi */
+      .form-group input.error {
+        border-color: var(--danger-red);
+        background-color: #fff5f5;
+      }
+
+      .error-message {
+        color: var(--danger-red);
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .error-message i {
+        font-size: 0.75rem;
+      }
+
+      .min-amount-info {
+        background-color: var(--light-blue);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--primary-blue);
+        font-size: 0.875rem;
+      }
+
+      .min-amount-info i {
+        font-size: 1rem;
+      }
+
+      .radio-group {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .radio-label {
+        flex: 1;
+        cursor: pointer;
+      }
+
+      .radio-label input[type="radio"] {
+        display: none;
+      }
+
+      .radio-custom {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        border: 2px solid var(--light-gray);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+      }
+
+      .radio-custom.pemasukan:hover {
+        background: #e6fffa;
+        border-color: var(--success-green);
+      }
+
+      .radio-custom.pengeluaran:hover {
+        background: #fff5f5;
+        border-color: var(--danger-red);
+      }
+
+      .radio-label input[type="radio"]:checked + .radio-custom.pemasukan {
+        background: var(--success-green);
+        color: var(--white);
+        border-color: var(--success-green);
+      }
+
+      .radio-label input[type="radio"]:checked + .radio-custom.pengeluaran {
+        background: var(--danger-red);
+        color: var(--white);
+        border-color: var(--danger-red);
+      }
+
+      .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: var(--primary-blue);
+        color: var(--white);
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .btn-submit:hover {
+        background: var(--secondary-blue);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+      }
+
+      .btn-submit:disabled {
+        background: var(--gray);
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Filter Section */
+      .filter-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .filter-buttons {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .filter-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 10px;
+        background: var(--white);
+        color: var(--gray);
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .filter-btn:hover {
+        background: var(--light-blue);
+        color: var(--primary-blue);
+      }
+
+      .filter-btn.active {
+        background: var(--primary-blue);
+        color: var(--white);
+      }
+
+      .search-box {
+        position: relative;
+        flex: 1;
+        max-width: 300px;
+      }
+
+      .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray);
+      }
+
+      .search-box input {
+        width: 100%;
+        padding: 0.5rem 1rem 0.5rem 2.5rem;
+        border: 2px solid var(--light-gray);
+        border-radius: 10px;
+        font-family: "Inter", sans-serif;
+        transition: all 0.3s ease;
+      }
+
+      .search-box input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+      }
+
+      /* Transactions */
+      .transactions-container {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        overflow-x: auto;
+      }
+
+      .transaction-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.2fr 0.6fr 1.3fr 1.8fr 0.5fr;
+        min-width: 640px;
+        padding: 1rem;
+        background: var(--light-gray);
+        border-radius: 10px;
+        font-weight: 600;
+        color: var(--gray);
+        margin-bottom: 0.5rem;
+      }
+
+      .transaction-item {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.2fr 0.6fr 1.3fr 1.8fr 0.5fr;
+        min-width: 640px;
+        padding: 1rem;
+        border-bottom: 1px solid var(--light-gray);
+        align-items: center;
+        transition: background 0.3s ease;
+      }
+
+      .transaction-item:hover {
+        background: var(--light-blue);
+      }
+
+      .transaction-item.pemasukan .nominal {
+        color: var(--success-green);
+        font-weight: 600;
+      }
+
+      .transaction-item.pengeluaran .nominal {
+        color: var(--danger-red);
+        font-weight: 600;
+      }
+
+      .transaction-item .jenis-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 5px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-block;
+      }
+
+      .transaction-item.pemasukan .jenis-badge {
+        background: #e6fffa;
+        color: var(--success-green);
+      }
+
+      .transaction-item.pengeluaran .jenis-badge {
+        background: #fff5f5;
+        color: var(--danger-red);
+      }
+
+      .delete-btn {
+        background: none;
+        border: none;
+        color: var(--danger-red);
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 0.25rem;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+      }
+
+      .delete-btn:hover {
+        background: #fff5f5;
+        transform: scale(1.1);
+      }
+
+      .recent-transactions {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        overflow-x: auto;
+      }
+
+      .recent-transactions h3 {
+        margin-bottom: 1rem;
+        color: var(--gray);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .empty-message {
+        text-align: center;
+        color: var(--gray);
+        padding: 2rem;
+      }
+
+      .page {
+        display: none;
+      }
+
+      .page.active {
+        display: block;
+        animation: slideIn 0.5s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .navbar {
+          flex-direction: column;
+          gap: 1rem;
+          padding: 1rem;
+        }
+
+        .nav-menu {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .nav-menu a span {
+          display: none;
+        }
+
+        .nav-menu a i {
+          font-size: 1.25rem;
+        }
+
+        .summary-cards {
+          grid-template-columns: 1fr;
+        }
+
+        .charts-container {
+          grid-template-columns: 1fr;
+        }
+
+        .dashboard-header-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .date-picker-wrapper {
+          justify-content: space-between;
+          width: 100%;
+        }
+
+        .date-picker-wrapper input[type="date"] {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .filter-section {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .filter-buttons {
+          flex-wrap: wrap;
+        }
+
+        .filter-buttons .filter-btn {
+          flex: 1;
+          min-width: 90px;
+        }
+
+        .search-box {
+          max-width: 100%;
+        }
+
+        .transaction-header {
+          display: none;
+        }
+
+        .transaction-item {
+          grid-template-columns: 1fr;
+          min-width: 0;
+          gap: 0.5rem;
+          position: relative;
+          padding-right: 2rem;
+        }
+
+        .delete-btn {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+        }
+
+        .chart-canvas-wrapper {
+          height: 240px;
+        }
+
+        .card-value {
+          font-size: 1.25rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .form-card {
+          padding: 1rem;
+        }
+
+        .radio-group {
+          flex-direction: column;
+        }
+
+        .chart-canvas-wrapper {
+          height: 220px;
+        }
+
+        .nav-brand span {
+          display: none;
+        }
+
+        .page-title {
+          font-size: 1.25rem;
+        }
+
+        /* Cegah auto-zoom iOS Safari saat fokus ke input/select (butuh font-size >= 16px) */
+        .form-group input,
+        .form-group select,
+        .form-group textarea,
+        .search-box input,
+        .date-picker-wrapper input[type="date"] {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="nav-brand">
+        <i class="fas fa-utensils"></i>
+        <span>RestoKu</span>
+      </div>
+      <div class="nav-menu">
+        <a onclick="showPage('dashboard')" class="active" id="nav-dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a>
+        <a onclick="showPage('add')" id="nav-add"><i class="fas fa-plus-circle"></i><span>Tambah</span></a>
+        <a onclick="showPage('history')" id="nav-history"><i class="fas fa-history"></i><span>Riwayat</span></a>
+      </div>
+    </nav>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard-page" class="page active">
+      <div class="container">
+        <div class="dashboard-header-row">
+          <h1 class="page-title"><i class="fas fa-utensils"></i> Dashboard Rekap Restoran Harian</h1>
+          <div class="date-picker-wrapper">
+            <label for="dashboardDate"><i class="fas fa-calendar-day"></i> Pilih Tanggal</label>
+            <input type="date" id="dashboardDate" onchange="updateDashboard()" />
+          </div>
+        </div>
+
+        <div class="summary-cards">
+          <div class="card saldo-card">
+            <div class="card-icon">
+              <i class="fas fa-wallet"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-label">Untung / Rugi Hari Ini</span>
+              <span class="card-value" id="saldo">Rp 0</span>
+            </div>
+          </div>
+
+          <div class="card pemasukan-card">
+            <div class="card-icon">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-label">Omset Hari Ini</span>
+              <span class="card-value" id="totalPemasukan">Rp 0</span>
+            </div>
+          </div>
+
+          <div class="card pengeluaran-card">
+            <div class="card-icon">
+              <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-label">Pengeluaran Hari Ini</span>
+              <span class="card-value" id="totalPengeluaran">Rp 0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-container">
+          <div class="chart-card">
+            <h3><i class="fas fa-chart-pie"></i> Rasio Omset vs Pengeluaran (Hari Ini)</h3>
+            <div class="chart-canvas-wrapper">
+              <canvas id="comparisonChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <h3><i class="fas fa-chart-bar"></i> Rincian Pengeluaran Operasional (Hari Ini)</h3>
+            <div class="chart-canvas-wrapper">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-container">
+          <div class="chart-card menu-accum-card">
+            <h3><i class="fas fa-fire"></i> Akumulasi Menu Terjual Hari Ini</h3>
+            <div id="menuAccumulationList" class="menu-accum-list"></div>
+          </div>
+
+          <div class="chart-card reason-card">
+            <h3><i class="fas fa-lightbulb"></i> Rekap Masalah & Analisis Harian</h3>
+            <div id="reasonAnalysis" class="reason-text"></div>
+          </div>
+        </div>
+
+        <div class="recent-transactions">
+          <h3><i class="fas fa-receipt"></i> Transaksi Hari Ini</h3>
+          <div class="transaction-list" id="recentTransactions"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Transaction Page -->
+    <div id="add-page" class="page">
+      <div class="container">
+        <h1 class="page-title"><i class="fas fa-plus-circle"></i> Tambah Transaksi Restoran</h1>
+
+        <div class="form-card">
+          <!-- Info minimal transaksi -->
+          <div class="min-amount-info">
+            <i class="fas fa-info-circle"></i>
+            <span>Minimal transaksi: <strong>Rp 10.000</strong></span>
+          </div>
+
+          <form id="transactionForm">
+            <div class="form-group">
+              <label for="tanggal"><i class="fas fa-calendar"></i> Tanggal</label>
+              <input type="date" id="tanggal" name="tanggal" required />
+            </div>
+
+            <div class="form-group">
+              <label>Jenis Transaksi</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="jenis" value="pemasukan" checked onchange="toggleJenisFields()" />
+                  <span class="radio-custom pemasukan"><i class="fas fa-arrow-down"></i> Pemasukan</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="jenis" value="pengeluaran" onchange="toggleJenisFields()" />
+                  <span class="radio-custom pengeluaran"><i class="fas fa-arrow-up"></i> Pengeluaran</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Field khusus Pemasukan: Menu & Kuantitas -->
+            <div class="form-group" id="menuGroup">
+              <label for="menuPemasukan"><i class="fas fa-utensils"></i> Menu Terjual</label>
+              <select id="menuPemasukan" name="menuPemasukan" onchange="hitungNominalPemasukan()">
+                <option value="Mie Goreng" data-harga="15000">🍜 Mie Goreng - Rp 15.000</option>
+                <option value="Nasi Goreng" data-harga="18000">🍛 Nasi Goreng - Rp 18.000</option>
+                <option value="Ayam Bakar" data-harga="25000">🍗 Ayam Bakar - Rp 25.000</option>
+                <option value="Es Teh Manis" data-harga="5000">🥤 Es Teh Manis - Rp 5.000</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="qtyGroup">
+              <label for="kuantitas"><i class="fas fa-sort-numeric-up"></i> Kuantitas / Jumlah Porsi</label>
+              <input type="number" id="kuantitas" name="kuantitas" min="1" value="1" oninput="hitungNominalPemasukan()" />
+            </div>
+
+            <!-- Field khusus Pengeluaran: Kategori Operasional -->
+            <div class="form-group" id="kategoriPengeluaranGroup" style="display: none">
+              <label for="kategoriPengeluaran"><i class="fas fa-tags"></i> Kategori Pengeluaran</label>
+              <select id="kategoriPengeluaran" name="kategoriPengeluaran">
+                <option value="Jatah Pengamen / Keamanan">🎸 Jatah Pengamen / Keamanan</option>
+                <option value="Bahan Baku">🥩 Bahan Baku</option>
+                <option value="Listrik / Air">💡 Listrik / Air</option>
+                <option value="Sewa Tempat">🏠 Sewa Tempat</option>
+                <option value="Gaji Karyawan">👨‍🍳 Gaji Karyawan</option>
+                <option value="Lainnya">📦 Lainnya</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="nominal" id="nominalLabel"><i class="fas fa-money-bill-wave"></i> Total Harga (Otomatis)</label>
+              <input type="text" id="nominal" name="nominal" placeholder="Contoh: 10.000" required readonly />
+              <div id="nominalError" class="error-message" style="display: none">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Nominal minimal Rp 10.000</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="catatan"><i class="fas fa-pencil-alt"></i> Catatan</label>
+              <textarea id="catatan" name="catatan" placeholder="Tambahkan catatan (opsional)" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-save"></i> Tambah Transaksi</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Page -->
+    <div id="history-page" class="page">
+      <div class="container">
+        <h1 class="page-title"><i class="fas fa-history"></i> Riwayat Transaksi Restoran</h1>
+
+        <div class="filter-section">
+          <div class="filter-buttons">
+            <button class="filter-btn active" onclick="filterTransactions('semua')">Semua</button>
+            <button class="filter-btn" onclick="filterTransactions('pemasukan')">Pemasukan</button>
+            <button class="filter-btn" onclick="filterTransactions('pengeluaran')">Pengeluaran</button>
+          </div>
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Cari transaksi..." onkeyup="searchTransactions()" />
+          </div>
+        </div>
+
+        <div class="transactions-container">
+          <div class="transaction-header">
+            <span>Tanggal</span>
+            <span>Jenis</span>
+            <span>Menu / Kategori</span>
+            <span>Qty</span>
+            <span>Nominal</span>
+            <span>Catatan</span>
+            <span>Aksi</span>
+          </div>
+          <div id="transactionList" class="transaction-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ==================== STORAGE ====================
+      const STORAGE_KEY = "restoku_transactions";
+      const MIN_NOMINAL = 10000; // Minimal Rp 10.000
+
+      function getTransactions() {
+        const transactions = localStorage.getItem(STORAGE_KEY);
+        return transactions ? JSON.parse(transactions) : [];
+      }
+
+      function saveTransactions(transactions) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+      }
+
+      function addTransaction(transaction) {
+        const transactions = getTransactions();
+        transaction.id = Date.now();
+        transactions.push(transaction);
+        saveTransactions(transactions);
+      }
+
+      function deleteTransaction(id) {
+        const transactions = getTransactions();
+        const filteredTransactions = transactions.filter((t) => t.id !== id);
+        saveTransactions(filteredTransactions);
+      }
+
+      // ==================== DAILY ISOLATION HELPERS ====================
+      function getSelectedDate() {
+        const input = document.getElementById("dashboardDate");
+        if (input && input.value) return input.value;
+        return new Date().toISOString().split("T")[0];
+      }
+
+      function getTransactionsByDate(date) {
+        return getTransactions().filter((t) => t.tanggal === date);
+      }
+
+      function getTotalPemasukan(date) {
+        const transactions = date ? getTransactionsByDate(date) : getTransactions();
+        return transactions.filter((t) => t.jenis === "pemasukan").reduce((total, t) => total + parseInt(String(t.nominal).replace(/\./g, "")), 0);
+      }
+
+      function getTotalPengeluaran(date) {
+        const transactions = date ? getTransactionsByDate(date) : getTransactions();
+        return transactions.filter((t) => t.jenis === "pengeluaran").reduce((total, t) => total + parseInt(String(t.nominal).replace(/\./g, "")), 0);
+      }
+
+      function getSaldo(date) {
+        return getTotalPemasukan(date) - getTotalPengeluaran(date);
+      }
+
+      function getComparisonChartData(date) {
+        return {
+          labels: ["Omset (Pemasukan)", "Pengeluaran"],
+          datasets: [
+            {
+              data: [getTotalPemasukan(date), getTotalPengeluaran(date)],
+              backgroundColor: ["#48BB78", "#F56565"],
+              borderWidth: 0,
+            },
+          ],
+        };
+      }
+
+      function getCategoryChartData(date) {
+        const transactions = date ? getTransactionsByDate(date) : getTransactions();
+        const pengeluaran = transactions.filter((t) => t.jenis === "pengeluaran");
+
+        const categories = {};
+        pengeluaran.forEach((t) => {
+          const nominal = parseInt(String(t.nominal).replace(/\./g, ""));
+          if (categories[t.kategori]) {
+            categories[t.kategori] += nominal;
+          } else {
+            categories[t.kategori] = nominal;
+          }
+        });
+
+        return {
+          labels: Object.keys(categories),
+          datasets: [
+            {
+              data: Object.values(categories),
+              backgroundColor: ["#FF6B6B", "#F6AD55", "#4A90E2", "#9F7AEA", "#ED64A6", "#48BB78"],
+              borderWidth: 0,
+            },
+          ],
+        };
+      }
+
+      function formatRupiah(angka) {
+        if (!angka) return "Rp 0";
+
+        // Jika angka berupa string yang mengandung titik, hapus dulu
+        if (typeof angka === "string") {
+          angka = angka.replace(/\./g, "");
+        }
+
+        // Konversi ke number
+        const number = parseInt(angka);
+
+        // Format dengan titik sebagai pemisah ribuan
+        return "Rp " + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      }
+
+      // Fungsi untuk memformat input nominal saat diketik
+      function formatInputRupiah(input) {
+        // Hapus semua karakter non-digit
+        let nilai = input.value.replace(/[^\d]/g, "");
+
+        if (nilai) {
+          // Format dengan titik setiap 3 digit
+          input.value = nilai.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+          // Validasi minimal nominal
+          validateNominal(input);
+        } else {
+          input.value = "";
+          validateNominal(input);
+        }
+      }
+
+      // Fungsi untuk validasi minimal nominal
+      function validateNominal(input) {
+        const nominalValue = input.value.replace(/\./g, "");
+        const errorElement = document.getElementById("nominalError");
+        const submitBtn = document.getElementById("submitBtn");
+
+        if (nominalValue && parseInt(nominalValue) < MIN_NOMINAL) {
+          input.classList.add("error");
+          errorElement.style.display = "flex";
+          if (submitBtn) submitBtn.disabled = true;
+          return false;
+        } else {
+          input.classList.remove("error");
+          errorElement.style.display = "none";
+          if (submitBtn) submitBtn.disabled = false;
+          return true;
+        }
+      }
+
+      // ==================== FORM: TOGGLE PEMASUKAN / PENGELUARAN ====================
+      function toggleJenisFields() {
+        const jenisChecked = document.querySelector('input[name="jenis"]:checked');
+        if (!jenisChecked) return;
+        const jenis = jenisChecked.value;
+
+        const menuGroup = document.getElementById("menuGroup");
+        const qtyGroup = document.getElementById("qtyGroup");
+        const kategoriPengeluaranGroup = document.getElementById("kategoriPengeluaranGroup");
+        const nominalInput = document.getElementById("nominal");
+        const nominalLabel = document.getElementById("nominalLabel");
+
+        if (jenis === "pemasukan") {
+          menuGroup.style.display = "block";
+          qtyGroup.style.display = "block";
+          kategoriPengeluaranGroup.style.display = "none";
+          nominalInput.readOnly = true;
+          nominalLabel.innerHTML = '<i class="fas fa-money-bill-wave"></i> Total Harga (Otomatis)';
+          hitungNominalPemasukan();
+        } else {
+          menuGroup.style.display = "none";
+          qtyGroup.style.display = "none";
+          kategoriPengeluaranGroup.style.display = "block";
+          nominalInput.readOnly = false;
+          nominalLabel.innerHTML = '<i class="fas fa-money-bill-wave"></i> Nominal (Rp)';
+          nominalInput.value = "";
+          nominalInput.classList.remove("error");
+          document.getElementById("nominalError").style.display = "none";
+          document.getElementById("submitBtn").disabled = false;
+        }
+      }
+
+      function hitungNominalPemasukan() {
+        const menuSelect = document.getElementById("menuPemasukan");
+        const kuantitasInput = document.getElementById("kuantitas");
+        const nominalInput = document.getElementById("nominal");
+        if (!menuSelect || !kuantitasInput || !nominalInput) return;
+
+        const harga = parseInt(menuSelect.options[menuSelect.selectedIndex].dataset.harga) || 0;
+        const qty = parseInt(kuantitasInput.value) || 0;
+        const total = harga * qty;
+
+        nominalInput.value = total > 0 ? total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "";
+        validateNominal(nominalInput);
+      }
+
+      // ==================== CHARTS ====================
+      let comparisonChart = null;
+      let categoryChart = null;
+
+      function updateComparisonChart(date) {
+        const ctx = document.getElementById("comparisonChart")?.getContext("2d");
+        if (!ctx) return;
+
+        const data = getComparisonChartData(date);
+
+        if (comparisonChart) {
+          comparisonChart.destroy();
+        }
+
+        comparisonChart = new Chart(ctx, {
+          type: "doughnut",
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "bottom" },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return `${context.label}: ${formatRupiah(context.raw)}`;
+                  },
+                },
+              },
+            },
+            cutout: "60%",
+          },
+        });
+      }
+
+      function updateCategoryChart(date) {
+        const ctx = document.getElementById("categoryChart")?.getContext("2d");
+        if (!ctx) return;
+
+        const data = getCategoryChartData(date);
+
+        if (categoryChart) {
+          categoryChart.destroy();
+        }
+
+        categoryChart = new Chart(ctx, {
+          type: "bar",
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return `${context.label}: ${formatRupiah(context.raw)}`;
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return formatRupiah(value);
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function updateAllCharts(date) {
+        updateComparisonChart(date);
+        updateCategoryChart(date);
+      }
+
+      // ==================== PAGE NAVIGATION ====================
+      function showPage(pageName) {
+        // Hide all pages
+        document.querySelectorAll(".page").forEach((page) => {
+          page.classList.remove("active");
+        });
+
+        // Show selected page
+        document.getElementById(`${pageName}-page`).classList.add("active");
+
+        // Update nav active state
+        document.querySelectorAll(".nav-menu a").forEach((link) => {
+          link.classList.remove("active");
+        });
+        document.getElementById(`nav-${pageName}`).classList.add("active");
+
+        // Initialize page content
+        if (pageName === "dashboard") {
+          updateDashboard();
+        } else if (pageName === "add") {
+          document.getElementById("tanggal").value = new Date().toISOString().split("T")[0];
+
+          // Reset form dan validasi
+          const form = document.getElementById("transactionForm");
+          form.reset();
+          document.getElementById("tanggal").value = new Date().toISOString().split("T")[0];
+
+          // Pastikan tampilan field sesuai jenis default (pemasukan)
+          toggleJenisFields();
+
+          // Reset error state
+          const nominalInput = document.getElementById("nominal");
+          nominalInput.classList.remove("error");
+          document.getElementById("nominalError").style.display = "none";
+          document.getElementById("submitBtn").disabled = false;
+        } else if (pageName === "history") {
+          displayAllTransactions();
+        }
+      }
+
+      // ==================== DASHBOARD ====================
+      function updateDashboard() {
+        const dateInput = document.getElementById("dashboardDate");
+        if (dateInput && !dateInput.value) {
+          dateInput.value = new Date().toISOString().split("T")[0];
+        }
+        const tanggalTerpilih = getSelectedDate();
+
+        document.getElementById("saldo").textContent = formatRupiah(getSaldo(tanggalTerpilih));
+        document.getElementById("totalPemasukan").textContent = formatRupiah(getTotalPemasukan(tanggalTerpilih));
+        document.getElementById("totalPengeluaran").textContent = formatRupiah(getTotalPengeluaran(tanggalTerpilih));
+
+        updateAllCharts(tanggalTerpilih);
+        displayRecentTransactions(tanggalTerpilih);
+        displayMenuAccumulation(tanggalTerpilih);
+        displayReasonAnalysis(tanggalTerpilih);
+      }
+
+      function displayRecentTransactions(date) {
+        const transactions = getTransactionsByDate(date);
+        const recentContainer = document.getElementById("recentTransactions");
+
+        const sorted = transactions.sort((a, b) => b.id - a.id);
+
+        if (sorted.length === 0) {
+          recentContainer.innerHTML = '<p class="empty-message">Belum ada transaksi pada tanggal ini</p>';
+          return;
+        }
+
+        let html = "";
+        sorted.forEach((transaction) => {
+          const qtyDisplay = transaction.jenis === "pemasukan" && transaction.qty ? `${transaction.qty} Porsi` : "-";
+          html += `
+                    <div class="transaction-item ${transaction.jenis}">
+                        <span>${transaction.tanggal}</span>
+                        <span class="jenis-badge">${transaction.jenis}</span>
+                        <span>${transaction.kategori}</span>
+                        <span>${qtyDisplay}</span>
+                        <span class="nominal">${formatRupiah(transaction.nominal)}</span>
+                        <span>${transaction.catatan || "-"}</span>
+                    </div>
+                `;
+        });
+
+        recentContainer.innerHTML = html;
+      }
+
+      // ==================== MENU ACCUMULATION ====================
+      function displayMenuAccumulation(date) {
+        const container = document.getElementById("menuAccumulationList");
+        const pemasukanList = getTransactionsByDate(date).filter((t) => t.jenis === "pemasukan");
+
+        if (pemasukanList.length === 0) {
+          container.innerHTML = '<p class="empty-message">Belum ada menu terjual pada tanggal ini</p>';
+          return;
+        }
+
+        const menuTotals = {};
+        pemasukanList.forEach((t) => {
+          const qty = parseInt(t.qty) || 1;
+          menuTotals[t.kategori] = (menuTotals[t.kategori] || 0) + qty;
+        });
+
+        const sortedMenu = Object.entries(menuTotals).sort((a, b) => b[1] - a[1]);
+
+        let html = "";
+        sortedMenu.forEach(([menu, qty]) => {
+          html += `
+                    <div class="menu-accum-item">
+                        <span class="menu-name"><i class="fas fa-utensils"></i> ${menu}</span>
+                        <span class="menu-qty">${qty} Porsi Terjual</span>
+                    </div>
+                `;
+        });
+
+        container.innerHTML = html;
+      }
+
+      // ==================== REASON GENERATOR (ANALISIS HARIAN) ====================
+      function displayReasonAnalysis(date) {
+        const container = document.getElementById("reasonAnalysis");
+        const pemasukanList = getTransactionsByDate(date).filter((t) => t.jenis === "pemasukan");
+        const pengeluaranList = getTransactionsByDate(date).filter((t) => t.jenis === "pengeluaran");
+
+        if (pemasukanList.length === 0 && pengeluaranList.length === 0) {
+          container.innerHTML = '<p class="empty-message">Belum ada transaksi pada tanggal ini untuk dianalisis.</p>';
+          return;
+        }
+
+        const totalPemasukan = getTotalPemasukan(date);
+        const totalPengeluaran = getTotalPengeluaran(date);
+        const saldo = totalPemasukan - totalPengeluaran;
+
+        // Cari menu terlaris hari ini
+        const menuTotals = {};
+        pemasukanList.forEach((t) => {
+          const qty = parseInt(t.qty) || 1;
+          menuTotals[t.kategori] = (menuTotals[t.kategori] || 0) + qty;
+        });
+        let topMenu = null,
+          topQty = 0;
+        Object.entries(menuTotals).forEach(([menu, qty]) => {
+          if (qty > topQty) {
+            topQty = qty;
+            topMenu = menu;
+          }
+        });
+
+        // Cari pengeluaran terbesar hari ini
+        let biggestExpense = null;
+        pengeluaranList.forEach((t) => {
+          const nominal = parseInt(String(t.nominal).replace(/\./g, ""));
+          const biggestNominal = biggestExpense ? parseInt(String(biggestExpense.nominal).replace(/\./g, "")) : -1;
+          if (nominal > biggestNominal) biggestExpense = t;
+        });
+
+        let html = "";
+
+        if (saldo > 0 && totalPengeluaran === 0) {
+          // Surplus tanpa pengeluaran
+          html =
+            `<p>✅ <strong>Restoran berjalan ideal</strong> pada hari ini. Keuntungan sebesar <strong>${formatRupiah(saldo)}</strong> murni berasal dari penjualan menu, tanpa ada kebocoran biaya operasional sama sekali.` +
+            (topMenu ? ` Menu terlaris hari ini adalah <strong>${topMenu}</strong> dengan ${topQty} porsi terjual.` : "") +
+            `</p>`;
+        } else if (saldo > 0 && totalPengeluaran > 0) {
+          // Surplus tapi ada pengeluaran
+          html =
+            `<p>📈 Omset hari ini tetap terjaga dengan keuntungan bersih <strong>${formatRupiah(saldo)}</strong>` +
+            (topMenu ? `, didorong oleh <strong>${topMenu}</strong> yang laku keras (${topQty} porsi terjual)` : "") +
+            `. Meskipun begitu, kas sempat terpotong oleh pengeluaran terbesar hari ini yaitu <strong>${biggestExpense.kategori}</strong> sebesar ${formatRupiah(biggestExpense.nominal)}` +
+            (biggestExpense.catatan ? ` (catatan: ${biggestExpense.catatan})` : "") +
+            `.</p>`;
+        } else {
+          // Defisit / minus
+          html =
+            `<p>⚠️ Hari ini restoran mengalami <strong>defisit sebesar ${formatRupiah(Math.abs(saldo))}</strong>. Penyebab utamanya diduga karena pengeluaran ` +
+            (biggestExpense ? `<strong>${biggestExpense.kategori}</strong> sebesar ${formatRupiah(biggestExpense.nominal)}` : "operasional") +
+            ` yang nilainya jauh lebih besar dibanding omset penjualan yang sepi hari ini (hanya ${formatRupiah(totalPemasukan)}).</p>`;
+        }
+
+        container.innerHTML = html;
+      }
+
+      // ==================== ADD TRANSACTION ====================
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("transactionForm");
+        if (form) {
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const jenis = document.querySelector('input[name="jenis"]:checked').value;
+            const nominalInput = document.getElementById("nominal");
+            const nominalValue = nominalInput.value.replace(/\./g, "");
+
+            // Validasi nominal minimal
+            if (!nominalValue || parseInt(nominalValue) < MIN_NOMINAL) {
+              alert(`Nominal minimal Rp ${MIN_NOMINAL.toLocaleString("id-ID")}`);
+              nominalInput.classList.add("error");
+              document.getElementById("nominalError").style.display = "flex";
+              return;
+            }
+
+            let kategori,
+              qty = null;
+            if (jenis === "pemasukan") {
+              kategori = document.getElementById("menuPemasukan").value;
+              qty = parseInt(document.getElementById("kuantitas").value) || 1;
+            } else {
+              kategori = document.getElementById("kategoriPengeluaran").value;
+            }
+
+            const transaction = {
+              tanggal: document.getElementById("tanggal").value,
+              jenis: jenis,
+              nominal: nominalValue, // Simpan tanpa titik
+              kategori: kategori,
+              qty: qty,
+              catatan: document.getElementById("catatan").value,
+            };
+
+            addTransaction(transaction);
+            alert("Transaksi berhasil ditambahkan!");
+            form.reset();
+            document.getElementById("tanggal").value = new Date().toISOString().split("T")[0];
+            toggleJenisFields();
+
+            // Reset validasi
+            nominalInput.classList.remove("error");
+            document.getElementById("nominalError").style.display = "none";
+
+            // Sinkronkan tanggal dashboard dengan tanggal transaksi baru agar langsung terlihat
+            const dashboardDateInput = document.getElementById("dashboardDate");
+            if (dashboardDateInput) dashboardDateInput.value = transaction.tanggal;
+
+            showPage("dashboard");
+          });
+        }
+      });
+
+      // ==================== HISTORY ====================
+      let currentFilter = "semua";
+      let currentSearch = "";
+
+      function filterTransactions(filter) {
+        currentFilter = filter;
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.classList.remove("active");
+          if (btn.textContent.toLowerCase().includes(filter)) {
+            btn.classList.add("active");
+          }
+        });
+        displayAllTransactions();
+      }
+
+      function searchTransactions() {
+        currentSearch = document.getElementById("searchInput").value;
+        displayAllTransactions();
+      }
+
+      function displayAllTransactions() {
+        let transactions = getTransactions();
+        const container = document.getElementById("transactionList");
+
+        if (currentFilter !== "semua") {
+          transactions = transactions.filter((t) => t.jenis === currentFilter);
+        }
+
+        if (currentSearch) {
+          const searchLower = currentSearch.toLowerCase();
+          transactions = transactions.filter((t) => t.kategori.toLowerCase().includes(searchLower) || (t.catatan && t.catatan.toLowerCase().includes(searchLower)) || String(t.nominal).includes(currentSearch));
+        }
+
+        transactions.sort((a, b) => b.id - a.id);
+
+        if (transactions.length === 0) {
+          container.innerHTML = '<p class="empty-message">Tidak ada transaksi</p>';
+          return;
+        }
+
+        let html = "";
+        transactions.forEach((transaction) => {
+          const qtyDisplay = transaction.jenis === "pemasukan" && transaction.qty ? `${transaction.qty} Porsi` : "-";
+          html += `
+                    <div class="transaction-item ${transaction.jenis}" data-id="${transaction.id}">
+                        <span>${transaction.tanggal}</span>
+                        <span class="jenis-badge">${transaction.jenis}</span>
+                        <span>${transaction.kategori}</span>
+                        <span>${qtyDisplay}</span>
+                        <span class="nominal">${formatRupiah(transaction.nominal)}</span>
+                        <span>${transaction.catatan || "-"}</span>
+                        <button class="delete-btn" onclick="handleDelete(${transaction.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+        });
+
+        container.innerHTML = html;
+      }
+
+      function handleDelete(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus transaksi ini?")) {
+          deleteTransaction(id);
+          displayAllTransactions();
+          updateDashboard();
+        }
+      }
+
+      // Initialize dashboard on load
+      document.addEventListener("DOMContentLoaded", function () {
+        const dashboardDateInput = document.getElementById("dashboardDate");
+        if (dashboardDateInput) {
+          dashboardDateInput.value = new Date().toISOString().split("T")[0];
+        }
+
+        updateDashboard();
+        toggleJenisFields();
+      });
+    </script>
+  </body>
+</html>
